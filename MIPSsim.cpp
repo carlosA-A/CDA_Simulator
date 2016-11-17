@@ -202,25 +202,6 @@ class Simulator
         //temp2 (temp_str2);
         return pair_bit;
     }
-//Turn a 32 bit negative number into it's positive and set a bool
-    void twos_complement(bitset<32> &src)
-    {
-    
-        bool first_one = false;
-
-        for( int i = 31; i>=0;i--)
-        {
-            if(src[i] == 1 && first_one == false)
-                first_one = true;
-            
-            else if (first_one == true &&  src[i] == 1)
-                 src[i]= 0;
-            else if (first_one == true &&  src[i] == 0)
-                src[i] = 1;
-        }
-    
-    
-    }
 
     auto get_num(bitset<32> set) -> int
     {
