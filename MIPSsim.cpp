@@ -183,7 +183,7 @@ class Simulator
 
     }
 
-    pair<bitset<32>,bitset<32>> set_bitset()
+    pair <int,int> set_bitset()
     {
         //retrieve register location  string ex:00000
         get_reg(src1);
@@ -195,9 +195,9 @@ class Simulator
 
         bitset<32> temp1(temp_str1);
         bitset<32> temp2(temp_str2);
-
+        
         //return 2 numbers
-        pair <bitset<32>,bitset<32>> pair_bit = make_pair(temp1,temp2);
+        pair <int,int> pair_bit = make_pair(get_num(temp1),get_num(temp2));
         //temp1 (temp_str1);
         //temp2 (temp_str2);
         return pair_bit;
