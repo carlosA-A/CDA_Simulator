@@ -129,37 +129,75 @@ class Simulator
                 }
                 else if (opcode == "101")
                 {
-                    save_cat1_branch("BEQ");
+                    save_inst_16("BEQ");
                 }
                 else if (opcode == "011")
                 {
 
-                    save_cat1_branch("BNE");
+                    save_inst_16("BNE");
                 }
 
                 else if (opcode == "100")
                 {
 
-                    save_cat1_branch("BGTZ");
+                    save_inst_16("BGTZ");
                 }
                 else if (opcode == "101")
                 {
 
-                    save_cat1_branch("SW");
+                    save_inst_16("SW");
                 }
                 else if (opcode == "110")
                 {
 
-                    save_cat1_branch("LW");
+                    save_inst_16("LW");
                 }
             }
 
             //CATEGORY TYPE 3 instructions
             else if (format == "100")
             {
+                if(opcode = "000")
+                {
+                    save_inst_16("ORI");
+                
+                }
+                else if(opcode = "001")
+                {
+                    save_inst_16("XORI");
+                
+                }
+                else if(opcode = "010")
+                {
+                    save_inst_16("ADDI");
+                
+                }
+                else if(opcode = "011")
+                {
+                    save_inst_16("SUBI");
+                
+                }
+                else if(opcode = "100")
+                {
+                    save_inst_16("ANDI");
+                
+                }
+                else if(opcode = "101")
+                {
+                    save_inst_16("SRL");
+                
+                }
             
-            
-            
+                else if(opcode = "110")
+                {
+                    save_inst_16("SRA");
+                
+                }
+                else if(opcode = "111")
+                {
+                    save_inst_16("SLL");
+                
+                }
             }
         }
 
@@ -170,8 +208,8 @@ class Simulator
         temp_instruc->type = "BREAK";
         instructions.push_back(temp_instruc);
     }
-    //Save the info for a category 1 type instruction
-    void save_cat1_branch(string instr_name)
+    //Save the info for a instruction with 2 registers and a 16 bit address
+    void save_inst_16(string instr_name)
     {
     
         Instruc temp_instruc = new Instruc;
