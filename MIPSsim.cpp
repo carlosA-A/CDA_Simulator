@@ -9,27 +9,49 @@
 using namespace std;
 
 
+//Create a instruction struct to store data related to each instruction
+struct Instruc
+{
+    string type; //Store instruction type
+    string op;  //store opcode
+    int src1;   //store src1 index that will be accesed in the vector containing the 32 registers
+    int src2;
+    int dest;
+    static pc = 64;
+    int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
+
+
+
+
+
+}
+
 class Simulator
 {   
     private:
-        unordered_map <string,string> map;
-        int pc_counter;
-        int instr_pos;  //Used to acces and traverse string
-        string file_name;
         string instruction;
         string format;
         string opcode;
-        string dest;
-        string src1;
-        string src2;
+        int dest;
+        int src1;
+        int src2;
         string addrs;
+        unordered_map <string,int> map;
+        int pc_counter;
+        int instr_pos;  //Used to acces and traverse string
+        string file_name;
+        vector <Instruc> instructions;  //Stores the instructions
+        vector <int> regs; //Stores the values for the registers
+        vector<int> data; //stores the data in memory that will be accesed using lw and sw
 
     public:
 
     Simulator(string file):file_name{file}{}
-    
-    void print_data()
+    //A preprocessing step that populates the data vector and the instruction vectors with instruction structs that contain details pertaining to each instruction
+
+    void set_instructions()
     {
+    
         //open up file that contains instructions
         ifstream infile(file_name);
         
@@ -39,12 +61,38 @@ class Simulator
 
             reset();
             get_type_op(format);
-            //cout<<format<<endl;
+            
             //Instruction is category 2, XOR MUL ADD SUB etc
             if(format == "010")
             {   //category 2 type instruction handelling
+
+                //get opcode
+                get_type_op(opcode);
+                Instruc temp_instruc = new Instruc;
+                temp_instruc->type = type;
+                temp_instruc->op = opcode;
+                //get destination register
+                get_reg(dest);
+                temp_instruc->dest = dest;
+                //Get src1 from instruction and turn it into an integer value
+                //this value will be the location of the register array that 
+                //we will access to get the values we will perform
+                //operations on
+                get_reg(src1);
+                temp_instruc->src1 = src1;
+                //get the second instruction register
+
+                get_reg(src2);
+                temp_instruc->src2 = src2;
+
                 cat_two();
             }
+        }
+    
+    }
+    void print_data()
+    {
+            //cout<<format<<endl;
             
         }
     
@@ -73,14 +121,9 @@ class Simulator
     void get_reg(string &reg)
 
     {
-        int i = 0;
-        while(i<5)
-        {
-            reg+=instruction[instr_pos];
-            instr_pos++;
-            i++;
+        reg+=instruction.substr(instr_pos,5);
+        instr_pos+=6;
         
-        }
     
     }
     //used to get instruction type and opcode
@@ -88,14 +131,9 @@ class Simulator
     {
     
         //grab 3 leftmost bits to determine type of instructions
-        int i = 0;
-        while(i < 3)
-        {
-            format+=instruction[instr_pos];
-            instr_pos++;
-            i++;
-        }
-
+            format+=instruction.substr(instr_pos,3);
+            //instruction location after finding type
+            instr_pos+=4;
     
     }
 
@@ -158,11 +196,11 @@ class Simulator
         
             std::bitset<5> temp1 ;
             std::bitset<5> temp2 ;
-            //set_bitset(temp1,temp2);
+            set_bitset(temp1,temp2);
 
             //save result from AND into map
             auto temp3 = temp1&=temp2;
-            map[dest] =temp3.to_string();
+            map[dest] =temp3;
         
         }
         else if (opcode == "101")
@@ -197,13 +235,13 @@ class Simulator
         bitset<32> temp2(temp_str2);
         
         //return 2 numbers
-        pair <int,int> pair_bit = make_pair(get_num(temp1),get_num(temp2));
+        pair <int,int> pair_bit = make_pair(to_int(temp1),get_num(temp2));
         //temp1 (temp_str1);
         //temp2 (temp_str2);
         return pair_bit;
     }
 
-    auto get_num(bitset<32> set) -> int
+    auto to_int(bitset<32> set) -> int
     {
         return static_cast<int>(set.to_ulong());
     
