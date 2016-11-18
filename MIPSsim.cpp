@@ -44,8 +44,6 @@ class Simulator
         int src1;
         int src2;
         string addrs;
-        unordered_map <string,int> map;
-        int pc_counter;
         int instr_pos;  //Used to acces and traverse string
         string file_name;
         vector <Instruc*> instructions;  //Stores the instructions
@@ -77,6 +75,7 @@ class Simulator
 
                 //get opcode
                 get_type_op(opcode);
+                cout<<"format 1 "<<format<< "OPCODE 1 "<<opcode<<endl;
                 if(opcode == "000")
                 {
                     save_cat2_inst("XOR");
@@ -117,6 +116,8 @@ class Simulator
                 //get opcode
                 get_type_op(opcode);
 
+                cout<< "format 2 "<<format<<"OPCODE 2 "<<opcode<<endl;
+
                 if (opcode == "000")
                 {
                 
@@ -135,7 +136,7 @@ class Simulator
                     temp_instruc->addrs = to_int(temp_addrs);
                     instructions.push_back(temp_instruc);
                 }
-                else if (opcode == "101")
+                else if (opcode == "010")
                 {
                     save_inst_16("BEQ");
                 }
@@ -157,7 +158,6 @@ class Simulator
                 }
                 else if (opcode == "110")
                 {
-
                     save_inst_16("LW");
                 }
             }
@@ -165,6 +165,10 @@ class Simulator
             //CATEGORY TYPE 3 instructions
             else if (format == "100")
             {
+
+                get_type_op(opcode);
+                cout<< "format 3 "<<format<<" OPCODE 3 "<<opcode<<endl;
+
                 if(opcode == "000")
                 {
                     save_inst_16("ORI");
@@ -237,6 +241,7 @@ class Simulator
 
         get_reg(src2);
         temp_instruc->src2 = src2;
+        //get 16 bit offset
         bitset<32> temp_addrs (instruction.substr(7,16));
         temp_instruc->addrs = to_int(temp_addrs);
         instructions.push_back(temp_instruc);
@@ -270,8 +275,16 @@ class Simulator
     }
     void print_data()
     {
-            //cout<<format<<endl;
-            
+        for(Instruc* i: instructions)
+        {
+            cout<<i->type<<endl;
+        
+        }
+        for(int x: data)
+        {
+            cout<<x<<endl;
+
+        } 
     }
     
     
@@ -301,7 +314,7 @@ class Simulator
     {
         bitset<32> temp_reg(instruction.substr(instr_pos,5));
         reg+=to_int(temp_reg);
-        instr_pos+=6;
+        instr_pos+=5;
         
     
     }
@@ -312,7 +325,7 @@ class Simulator
         //grab 3 leftmost bits to determine type of instructions
             format+=instruction.substr(instr_pos,3);
             //instruction location after finding type
-            instr_pos+=4;
+            instr_pos+=3;
     
     }
 
@@ -419,6 +432,7 @@ int main ()
     string file_name;
     cin>>file_name;
     Simulator mips(file_name);
+    mips.set_instructions();
     mips.print_data();
 
     return 0;
