@@ -55,8 +55,10 @@ class Simulator
         //open up file that contains instructions
         ifstream infile(file_name);
         
-        //Read instructions from file
-        while(infile>>instruction)
+        //Read instructions from file while there are instructions to read
+        //When the break instruction is reached stop taking instructions
+        //Strat taking in data values
+        while(infile>>instruction && Instruction!="00111100000000000000000000001101")
         {
 
             reset();
@@ -68,26 +70,139 @@ class Simulator
 
                 //get opcode
                 get_type_op(opcode);
-                Instruc temp_instruc = new Instruc;
-                temp_instruc->type = type;
-                temp_instruc->op = opcode;
-                //get destination register
-                get_reg(dest);
-                temp_instruc->dest = to_int(dest);
-                //Get src1 from instruction and turn it into an integer value
-                //this value will be the location of the register array that 
-                //we will access to get the values we will perform
-                //operations on
-                get_reg(src1);
-                temp_instruc->src1 = to_int(src1);
-                //get the second instruction register
+                if(opcode == "000")
+                {
+                    save_cat2_inst("XOR");
+                }
+                else if(opcode == "001")
+                {
+                    save_cat2_inst("MUL");
+                }
+                else if(opcode == "010")
+                {
+                    save_cat2_inst("ADD");
+                }
+                else if(opcode == "011")
+                {
+                    save_cat2_inst("SUB");
+                }
+                else if(opcode == "100")
+                {
+                    save_cat2_inst("AND");
+                }
+                else if(opcode == "101")
+                {
+                    save_cat2_inst("OR");
+                }
+                else if(opcode == "110")
+                {
+                    save_cat2_inst("ADDU");
+                }
+                else if(opcode == "111")
+                {
+                    save_cat2_inst("SUBU");
+                }
 
-                get_reg(src2);
-                temp_instruc->src2 = to_int(src2);
+            }
+            //category 1 instructions
+            else if (format == "001")
+            {
+                //get opcode
+                get_type_op(opcode);
 
-                cat_two();
+                if (opcode == "000")
+                {
+                
+                    Instruc temp_instruc = new Instruc;
+                    temp_instruc->type = "NOP";
+                    temp_instruc->op = opcode;
+                    instructions.push_back(temp_instruc);
+                
+                }
+                else if (opcode == "001")
+                {
+                    Instruc temp_instruc = new Instruc;
+                    temp_instruc->type = "J";
+                    //Transfor bit string into a bitset and then into an integer value to store in the address field
+                    temp_instruc->addrs = get_num(bitset<26> temp_addrs (instruction.substr(7,26)));
+                    instructions.push_back(temp_instruc);
+                }
+                else if (opcode == "101")
+                {
+                    save_cat1_branch("BEQ");
+                }
+                else if (opcode == "011")
+                {
+
+                    save_cat1_branch("BNE");
+                }
+
+                else if (opcode == "100")
+                {
+
+                    save_cat1_branch("BGTZ");
+                }
+                else if (opcode == "101")
+                {
+
+                    save_cat1_branch("SW");
+                }
+                else if (opcode == "110")
+                {
+
+                    save_cat1_branch("LW");
+                }
             }
         }
+
+
+        /////////////Save Break instruction insto a struct!!!
+    
+        Instruc temp_instruc = new Instruc;
+        temp_instruc->type = "BREAK";
+        instructions.push_back(temp_instruc);
+    }
+    //Save the info for a category 1 type instruction
+    void save_cat1_branch(string instr_name)
+    {
+    
+        Instruc temp_instruc = new Instruc;
+        temp_instruc->type = instr_name;
+        //Get register values to retrieve numbers that will be compared to determine if there is equality
+        get_reg(src1);
+        temp_instruc->src1 = to_int(bitset<5> temp_src1 (src1));
+        //get the second instruction register
+
+        get_reg(src2);
+        temp_instruc->src2 = to_int(bitset<5> temp_src2 (src2));
+        temp_instruc->addrs = get_num(bitset<16> temp_addrs (instruction.substr(7,16)));
+        instructions.push_back(temp_instruc);
+    
+    
+    }
+
+    //stores the name of the instruction in the instruction struct
+    void save_cat2_inst(string instr_name)
+    {
+    
+    
+        Instruc temp_instruc = new Instruc;
+        temp_instruc->type = instr_name;
+        temp_instruc->op = opcode;
+        //get destination register
+        get_reg(dest);
+        temp_instruc->dest = to_int(bitset<5> temp_dest (dest));
+        //Get src1 from instruction and turn it into an integer value
+        //this value will be the location of the register array that 
+        //we will access to get the values we will perform
+        //operations on
+        get_reg(src1);
+        temp_instruc->src1 = to_int(bitset<5> temp_src1 (src1));
+        //get the second instruction register
+
+        get_reg(src2);
+        temp_instruc->src2 = to_int(bitset<5> temp_src2 (src2));
+        instructions.push_back(temp_instruc);
     
     }
     void print_data()
