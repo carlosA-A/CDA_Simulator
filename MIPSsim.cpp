@@ -73,17 +73,17 @@ class Simulator
                 temp_instruc->op = opcode;
                 //get destination register
                 get_reg(dest);
-                temp_instruc->dest = dest;
+                temp_instruc->dest = to_int(dest);
                 //Get src1 from instruction and turn it into an integer value
                 //this value will be the location of the register array that 
                 //we will access to get the values we will perform
                 //operations on
                 get_reg(src1);
-                temp_instruc->src1 = src1;
+                temp_instruc->src1 = to_int(src1);
                 //get the second instruction register
 
                 get_reg(src2);
-                temp_instruc->src2 = src2;
+                temp_instruc->src2 = to_int(src2);
 
                 cat_two();
             }
