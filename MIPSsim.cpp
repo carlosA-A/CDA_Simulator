@@ -153,6 +153,14 @@ class Simulator
                     save_cat1_branch("LW");
                 }
             }
+
+            //CATEGORY TYPE 3 instructions
+            else if (format == "100")
+            {
+            
+            
+            
+            }
         }
 
 
