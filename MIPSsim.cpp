@@ -10,16 +10,21 @@ using namespace std;
 
 
 //Create a instruction struct to store data related to each instruction
-struct Instruc
+class Instruc
 {
-    string type; //Store instruction type
-    string op;  //store opcode
-    int src1;   //store src1 index that will be accesed in the vector containing the 32 registers
-    int src2;
-    int dest;
-    static pc = 64;
-    int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
+    public:
 
+        string type; //Store instruction type
+        string op;  //store opcode
+        int src1;   //store src1 index that will be accesed in the vector containing the 32 registers
+        int src2;
+        int dest;
+        static pc = 60;
+        int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
+    Instruc()
+    {
+        pc+=4;
+    }
 
 
 
@@ -207,6 +212,14 @@ class Simulator
         Instruc temp_instruc = new Instruc;
         temp_instruc->type = "BREAK";
         instructions.push_back(temp_instruc);
+
+        //Read the values in memory
+        while(infile>>instruction)
+        {
+        
+            data.push_back(to_int(bitset<32> temp_data (instruction)));
+        
+        }
     }
     //Save the info for a instruction with 2 registers and a 16 bit address
     void save_inst_16(string instr_name)
