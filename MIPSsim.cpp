@@ -76,7 +76,6 @@ class Simulator
 
                 //get opcode
                 get_type_op(opcode);
-                cout<<"format 1 "<<format<< "OPCODE 1 "<<opcode<<endl;
                 if(opcode == "000")
                 {
                     save_cat2_inst("XOR");
@@ -119,7 +118,6 @@ class Simulator
                 //get opcode
                 get_type_op(opcode);
 
-                cout<< "format 2 "<<format<<"OPCODE 2 "<<opcode<<endl;
 
                 if (opcode == "000")
                 {
@@ -172,7 +170,6 @@ class Simulator
             {
 
                 get_type_op(opcode);
-                cout<< "format 3 "<<format<<" OPCODE 3 "<<opcode<<endl;
 
                 if(opcode == "000")
                 {
@@ -248,16 +245,16 @@ class Simulator
         //get 16 bit offset
 
         string offset = instruction.substr(16,16);
-        cout<<"OFFSET "<<offset<<endl;
 
-        
-        if(offset[0]=='1')
+        cout<<"PRE OFFSET "<<offset<<endl;
+        if(offset[0]=='1' && instr_name!="XORI")
         {
             extend(offset);
         
         }
         bitset<32> temp_addrs (offset);
         temp_instruc->addrs = to_int(temp_addrs);
+        cout<<"TYPE "<<instr_name<<" OFFSET "<<offset<<" SRC1 "<<src1<<" SRC2 "<<src2 <<" Address "<< to_int(temp_addrs)<<endl;
         instructions.push_back(temp_instruc);
     
     
@@ -324,21 +321,6 @@ class Simulator
         instructions.push_back(temp_instruc);
     
     }
-    void print_data()
-    {
-        for(Instruc* i: instructions)
-        {
-            cout<<i->type<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
-        
-        }
-        for(int x: data)
-        {
-            cout<<x<<endl;
-
-        } 
-    }
-    
-    
     
 
     //reset variables used to parse and analyze instruction so as to reuse them with the new incoming instructions
@@ -360,6 +342,21 @@ class Simulator
         addrs="";
 
     }
+    void print_data()
+    {
+        for(Instruc* i: instructions)
+        {
+            cout<<i->type<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
+        
+        }
+        for(int x: data)
+        {
+            cout<<x<<endl;
+
+        } 
+    }
+    
+    
     //used to get bits pertaining to the register being used
     void get_reg(int &reg)
 
