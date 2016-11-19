@@ -23,6 +23,7 @@ class Instruc
         int src2;
         int dest;
         int pc;
+        int branch;//Only used for instructions that require branching, except Jump
         int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
         static int next_pc;
 
@@ -73,7 +74,8 @@ class Simulator
         vector<Data*> data; //stores the data in memory that will be accesed using lw and sw
 
 
-    Simulator(string file):file_name{file}{}
+    Simulator(string file):file_name{file},regs(32)
+    {}
     //A preprocessing step that populates the data vector and the instruction vectors with instruction structs that contain details pertaining to each instruction
 
     void set_instructions()
@@ -175,6 +177,7 @@ class Simulator
                 else if (opcode == "010")
                 {
                     save_inst_16("BEQ");
+
                 }
                 else if (opcode == "011")
                 {
@@ -246,9 +249,7 @@ class Simulator
                 }
             }
         }
-
-
-        /////////////Save Break instruction insto a struct!!!
+        /////////////Save Break instruction into Instuction vector
     
         Instruc *temp_instruc = new Instruc;
         //temp_instruc->pc = pc_counter;
@@ -269,6 +270,64 @@ class Simulator
         
         }
     }
+
+    void simulate()
+    {
+        //location where data becomes accessible in memory
+        //it's the spot where data starts becoming available, after 
+        //the break command
+        int pc_start = 64;
+        
+        //Simulate instructions while break instruction is not found
+        for(int i =0;instructions[i]->name !="BREAK";i++)
+        {
+            //Category one instruction simulation
+            if(instructions[i]->cat == "001")
+            {
+            
+                if(instructions[i]->name == "NOP")
+                {
+                    continue;
+                
+                }
+                else if(instructions[i]->name == "J")
+                {   //substract the start of the PC (64) from the
+                    //jump address and then divide by 4 to locate
+                    //the index of the array, do -1 to offsett the i++
+                    //that happens after each loop
+                    //ex J 112 would do (112-64)/4 = 12-1 =11
+                    i = ((instructions[i]->addrs -pc_start)/4)-1;
+                }
+                else if(instructions[i]->name == "BEQ")
+                {
+                    
+                
+                }
+            
+            
+            }
+            
+        
+        }
+    
+    }
+
+    //return the index where the jump/branch instruction must go
+    //auto find_index(int offset) -> decltype(offset)
+    //{
+    //    for(int i = 0; i < instructions.size(); i++)
+    //    {
+    //        if(instructions[i]->pc == offset)
+    //    
+    //    }
+    //
+    //}
+
+
+
+
+
+
     //Save the info for a instruction with 2 registers and a 16 bit address
     void save_inst_16(string instr_name)
     {
@@ -296,6 +355,17 @@ class Simulator
         }
         bitset<32> temp_addrs (offset);
         temp_instruc->addrs = to_int(temp_addrs);
+
+        if(instr_name == "BEQ" || instr_name == "BNE"|| instr_name == "BGTZ")
+        {
+            //used to find the branch location if true
+            bitset <32> temp_pc (temp_instruc->pc);
+            //Add 4 to PC to reach next pc 
+            bitset <32> temp_add (4);
+            temp_addrs<<=2;
+            //Calculate branch address
+            temp_instruc->branch = to_int(temp_pc)+to_int(temp_add)+to_int(temp_addrs);
+        }
         instructions.push_back(temp_instruc);
     
     
