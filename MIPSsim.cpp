@@ -39,6 +39,21 @@ class Instruc
 };
 
 int Instruc::next_pc=60;
+class Data:public Instruc
+{
+    public:
+        string instruction;
+        int val;
+        int pc;
+
+        Data()
+        {
+            pc = Instruc::next_pc;
+
+        }
+
+};
+
 
 class Simulator
 {   
@@ -55,7 +70,7 @@ class Simulator
         string file_name;
         vector <Instruc*> instructions;  //Stores the instructions
         vector <int> regs; //Stores the values for the registers
-        vector<int> data; //stores the data in memory that will be accesed using lw and sw
+        vector<Data*> data; //stores the data in memory that will be accesed using lw and sw
 
 
     Simulator(string file):file_name{file}{}
@@ -149,7 +164,6 @@ class Simulator
                     bitset<32> temp_addrs (instruction.substr(6,26));
                     temp_addrs<<=2;
 
-                    cout<<"PC " <<pc<<endl;
                     for(int i = 31;i>=28 ;i--)
                     {
                         temp_addrs[i] = pc[i];
@@ -246,8 +260,12 @@ class Simulator
         //Read the values in memory
         while(infile>>instruction)
         {
-            bitset<32> temp_data (instruction);
-            data.push_back(to_int(temp_data));
+            bitset<32> temp_inst (instruction);
+            Data *temp_data = new Data;
+            temp_data->instruction = instruction;
+            temp_data->val =to_int(temp_inst);
+
+            data.push_back(temp_data);
         
         }
     }
@@ -271,7 +289,6 @@ class Simulator
 
         string offset = instruction.substr(16,16);
 
-        cout<<"PRE OFFSET "<<offset<<endl;
         if(offset[0]=='1' && instr_name!="XORI")
         {
             extend(offset);
@@ -279,7 +296,6 @@ class Simulator
         }
         bitset<32> temp_addrs (offset);
         temp_instruc->addrs = to_int(temp_addrs);
-        cout<<"name "<<instr_name<<" OFFSET "<<offset<<" SRC1 "<<src1<<" SRC2 "<<src2 <<" Address "<< to_int(temp_addrs)<<endl;
         instructions.push_back(temp_instruc);
     
     
@@ -423,16 +439,12 @@ class Simulator
                 
                 cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
 
-            
             }
-
-
-            cout<<i->name<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
         
         }
-        for(int x: data)
+        for(Data *x: data)
         {
-            cout<<x<<endl;
+            cout<<x->instruction<<"  "<<x->pc<<"  "<<x->val<<endl;
 
         } 
     }
