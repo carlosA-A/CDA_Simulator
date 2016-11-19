@@ -300,11 +300,67 @@ class Simulator
                 }
                 else if(instructions[i]->name == "BEQ")
                 {
+                    if(instructions[i]->src1 == instructions[i]->src2)
+                    {
+                        i = ((instructions[i]->branch - pc_start)/4)-1;
                     
+                    }
+                    else
+                    {
+                        continue;
+                    
+                    }
+                
+                }
+                else if(instructions[i]->name == "BNE")
+                {
+                
+                    if(instructions[i]->src1 != instructions[i]->src2)
+                    {
+                        i = ((instructions[i]->branch - pc_start)/4)-1;
+                    
+                    }
+                    else
+                    {
+                        continue;
+                    
+                    }
+                
+                
+                }
+                
+            
+                else if(instructions[i]->name == "BGTZ")
+                {
+                    
+                    if(instructions[i]->src1 > 0 )
+                    {
+                        i = ((instructions[i]->branch - pc_start)/4)-1;
+                    
+                    }
+                    else
+                    {
+                        continue;
+                    
+                    }
                 
                 }
             
-            
+                else if(instructions[i]->name == "SW")
+                {
+                    //get index of the memory location where data will be saved
+                    int index = (((instructions[i]->addrs + instructions[i]->src1)-pc_start)/4);
+                    data[index]->val = regs[instructions[i]->src2];    //save the data in register to memory address
+                
+                }
+                else if(instructions[i]->name == "LW")
+                {
+                    //get index of the memory location where data will be saved
+                    int index = (((instructions[i]->addrs + instructions[i]->src1)-pc_start)/4);
+                    regs[instructions[i]->src2] = data[index]->val;    //save the data in register to memory address
+                
+                }
+
             }
             
         
