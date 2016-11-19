@@ -145,11 +145,18 @@ class Simulator
                     temp_instruc->instruction = instruction;
                     temp_instruc->name = "J";
                     //Transfor bit string into a bitset and then into an integer value to store in the address field
-                    bitset<32> pc (temp_instruc->pc);
+                    bitset<32> pc (120);
                     bitset<32> temp_addrs (instruction.substr(6,26));
-
+                    cout<<"JUMP ADDRESS " <<temp_addrs<<endl;
                     temp_addrs<<=2;
-                    temp_addrs = temp_addrs|=pc;
+                    cout<<"JUMP ADDRESS " <<temp_addrs<<endl;
+
+                    cout<<"PC " <<pc<<endl;
+                    for(int i = 31;i>=28 ;i--)
+                    {
+                        temp_addrs[i] = pc[i];
+                    }
+                    
                     temp_instruc->addrs = to_int(temp_addrs);
                     instructions.push_back(temp_instruc);
                 }
