@@ -23,8 +23,8 @@ class Instruc
         int src2;
         int dest;
         int pc;
-        static int next_pc;
         int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
+        static int next_pc;
 
         Instruc()
         {
@@ -71,10 +71,8 @@ class Simulator
         //When the break instruction is reached stop taking instructions
         //Strat taking in data values
         
-        pc_counter =60;
         while(infile>>instruction && instruction!="00111100000000000000000000001101")
         {
-            pc_counter+=4;
             reset();
             get_name_op(format);
             
@@ -147,10 +145,12 @@ class Simulator
                     temp_instruc->instruction = instruction;
                     temp_instruc->name = "J";
                     //Transfor bit string into a bitset and then into an integer value to store in the address field
-                    bitset<32> pc (pc_counter);
+                    bitset<32> pc (temp_instruc->pc);
                     bitset<32> temp_addrs (instruction.substr(6,26));
+
                     temp_addrs<<=2;
-                    temp_instruc->addrs = to_int(pc|=temp_addrs);
+                    temp_addrs = temp_addrs|=pc;
+                    temp_instruc->addrs = to_int(temp_addrs);
                     instructions.push_back(temp_instruc);
                 }
                 else if (opcode == "010")
@@ -377,9 +377,14 @@ class Simulator
             {
                 if(i->name == "NOP")
                 {
-                
-                
                     cout<<i->name<<endl;
+                }
+                else if (i->name == "J")
+                {
+                
+                
+                    cout<<i->name<<" "<<i->addrs<<endl;
+                
                 }
             }
             cout<<i->name<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
