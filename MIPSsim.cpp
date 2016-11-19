@@ -147,9 +147,7 @@ class Simulator
                     //Transfor bit string into a bitset and then into an integer value to store in the address field
                     bitset<32> pc (120);
                     bitset<32> temp_addrs (instruction.substr(6,26));
-                    cout<<"JUMP ADDRESS " <<temp_addrs<<endl;
                     temp_addrs<<=2;
-                    cout<<"JUMP ADDRESS " <<temp_addrs<<endl;
 
                     cout<<"PC " <<pc<<endl;
                     for(int i = 31;i>=28 ;i--)
@@ -286,6 +284,7 @@ class Simulator
     
     
     }
+    //Save data for instructions that require shifting
     void save_shif_amnt(string instr_name)
     {
     
@@ -333,6 +332,8 @@ class Simulator
     
     
         Instruc *temp_instruc = new Instruc;
+        temp_instruc->cat = format;
+        temp_instruc->instruction = instruction;
         temp_instruc->name = instr_name;
         temp_instruc->op = opcode;
         //get destination register
@@ -388,12 +389,44 @@ class Simulator
                 }
                 else if (i->name == "J")
                 {
-                
-                
                     cout<<i->name<<" "<<i->addrs<<endl;
+                }
+                else if (i->name == "BREAK")
+                {
+                    cout<<i->name<<endl;
+                
+                }
+                else if (i->name == "SW" ||i->name == "LW")
+                {
+                
+                    cout<<i->name<<" R"<<i->src2<<", "<<i->addrs<<"(R"<<i->src1<<")"<<endl;
+                }
+                else if (i->name == "BEQ" ||i->name == "BNE")
+                {
+                    cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
+                }
+                else if(i->name == "BGTZ")
+                {
+                    
+                    cout<<i->name<<" R"<<i->src1<<", #"<<i->addrs<<endl;
                 
                 }
             }
+            else if(i->cat == "010")
+            {
+            
+                cout<<i->name<<" R"<<i->dest<<", R"<<i->src1<<", R"<<i->src2<<endl;
+            
+            }
+            else if (i->cat == "100")
+            {
+                
+                cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
+
+            
+            }
+
+
             cout<<i->name<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
         
         }
