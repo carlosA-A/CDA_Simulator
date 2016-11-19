@@ -65,7 +65,8 @@ class Simulator
         //Strat taking in data values
         while(infile>>instruction && instruction!="00111100000000000000000000001101")
         {
-
+            int pc_counter =60;
+            pc_counter+=4;
             reset();
             get_type_op(format);
             
@@ -102,10 +103,12 @@ class Simulator
                 }
                 else if(opcode == "110")
                 {
+                    //deal with unsigned nuber
                     save_cat2_inst("ADDU");
                 }
                 else if(opcode == "111")
                 {
+                    //deal with unsigned number
                     save_cat2_inst("SUBU");
                 }
 
@@ -132,8 +135,10 @@ class Simulator
                     Instruc *temp_instruc = new Instruc;
                     temp_instruc->type = "J";
                     //Transfor bit string into a bitset and then into an integer value to store in the address field
-                    bitset<32> temp_addrs (instruction.substr(7,26));
-                    temp_instruc->addrs = to_int(temp_addrs);
+                    bitset<32> pc (pc_counter);
+                    bitset<32> temp_addrs (instruction.substr(6,26));
+                    temp_addrs<<=2;
+                    temp_instruc->addrs = to_int(pc|=temp_addrs);
                     instructions.push_back(temp_instruc);
                 }
                 else if (opcode == "010")
@@ -196,18 +201,17 @@ class Simulator
                 }
                 else if(opcode == "101")
                 {
-                    save_inst_16("SRL");
+                    save_shif_amnt("SRL");
                 
                 }
             
                 else if(opcode == "110")
                 {
-                    save_inst_16("SRA");
-                
+                    save_shif_amnt("SRA");
                 }
                 else if(opcode == "111")
                 {
-                    save_inst_16("SLL");
+                    save_shif_amnt("SLL");
                 
                 }
             }
@@ -242,10 +246,57 @@ class Simulator
         get_reg(src2);
         temp_instruc->src2 = src2;
         //get 16 bit offset
-        bitset<32> temp_addrs (instruction.substr(7,16));
+
+        string offset = instruction.substr(16,16);
+        cout<<"OFFSET "<<offset<<endl;
+
+        
+        if(offset[0]=='1')
+        {
+            extend(offset);
+        
+        }
+        bitset<32> temp_addrs (offset);
         temp_instruc->addrs = to_int(temp_addrs);
         instructions.push_back(temp_instruc);
     
+    
+    }
+    void save_shif_amnt(string instr_name)
+    {
+    
+        Instruc *temp_instruc = new Instruc;
+        temp_instruc->type = instr_name;
+        //Get register values to retrieve numbers that will be compared to determine if there is equality
+        get_reg(src1);
+        temp_instruc->src1 = src1;
+        //get the second instruction register
+
+        get_reg(src2);
+        temp_instruc->src2 = src2;
+        //get 16 bit offset
+        bitset<32> temp_addrs (instruction.substr(28,5));
+        temp_instruc->addrs = to_int(temp_addrs);
+        instructions.push_back(temp_instruc);
+    
+    }
+    //sign extends a negative number
+    void extend(string &extnd)
+    {
+        string ones;
+
+        ones.append(16u,'1');
+
+        //If 16 bit number is negative then sign extend the number so that
+        //it can be converted into the appropriate signed integer
+        //ex 111111111111111 would be expected to be -1 but if no sign extension
+        //is done then the binary number will be transformed into an integer from 000000000000001111111111111
+        
+        if(extnd[0]=='1')
+        {
+            extnd=ones.append(extnd);
+        
+        }
     
     }
 
@@ -277,7 +328,7 @@ class Simulator
     {
         for(Instruc* i: instructions)
         {
-            cout<<i->type<<endl;
+            cout<<i->type<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
         
         }
         for(int x: data)
@@ -307,6 +358,7 @@ class Simulator
         src2=0;
 
         addrs="";
+
     }
     //used to get bits pertaining to the register being used
     void get_reg(int &reg)
@@ -333,86 +385,9 @@ class Simulator
     void cat_two()
     {
 
-        get_type_op(opcode);
-
-        //Determine what to do depending on the opcode
-        if(opcode == "000")
-        {
-
-        }
-        //else if(opcode == "001")
-        //{
-        //
-        //    std::bitset<5> temp1 ;
-        //    std::bitset<5> temp2 ;
-        //    set_bitset(temp1,temp2);
-
-        //    //save result from MUL into map
-        //    auto temp3 = temp1*temp2;
-        //    map[dest] =temp3.to_string() ;
-        //
-        //}
-        //else if (opcode == "010")
-        //{
-        //
-        //    std::bitset<5> temp1 ;
-        //    std::bitset<5> temp2 ;
-        //    set_bitset(temp1,temp2);
-
-        //    //save result from ADD into map
-        //    auto temp3 = temp1+temp2;
-        //    map[dest] =temp3.to_string();
-        //
-        //
-        //}
-        //else if (opcode == "011")
-        //{
-        //
-        //    std::bitset<5> temp1 ;
-        //    std::bitset<5> temp2 ;
-        //    set_bitset(temp1,temp2);
-
-        //    //save result from SUB into map
-        //    auto temp3 = temp1-temp2;
-        //    map[dest] =temp3.to_string();
-        //
-        //
-        //}
-        else if (opcode == "100")
-        {
-        
-        
-        }
-        else if (opcode == "101")
-        {
-        
-        
-        }
-
-        cout<<opcode<<endl;
-
 
     }
 
-    //pair <int,int> set_bitset()
-    //{
-    //    //retrieve register location  string ex:00000
-    //    get_reg(src1);
-    //    get_reg(src2);
-    //    
-    //    //grab value in register src1 and src2 stored in map
-    //    string temp_str1 = map[src1];
-    //    string temp_str2 = map[src2];
-
-    //    bitset<32> temp1(temp_str1);
-    //    bitset<32> temp2(temp_str2);
-    //    
-    //    //return 2 numbers
-    //    pair <int,int> pair_bit = make_pair(to_int(temp1),to_int(temp2));
-    //    //temp1 (temp_str1);
-    //    //temp2 (temp_str2);
-    //    return pair_bit;
-    //}
 
     auto to_int(bitset<32> set) -> int
     {
