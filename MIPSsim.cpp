@@ -15,24 +15,30 @@ class Instruc
 {
     public:
 
-        string type; //Store instruction type
+        string name; //Store instruction name
+        string instruction;//Store instruction
+        string cat; //Store instruction category
         string op;  //store opcode
         int src1;   //store src1 index that will be accesed in the vector containing the 32 registers
         int src2;
         int dest;
-        static int pc;
+        int pc;
+        static int next_pc;
         int addrs; //array pos of of instruction address to be accessed ex: lw r5,144(r0)
-    Instruc()
-    {
-        pc+=4;
-    }
+
+        Instruc()
+        {
+            next_pc+=4;
+            pc = Instruc::next_pc;
+
+        }
 
 
 
 
 };
 
-int Instruc::pc = 60;
+int Instruc::next_pc=60;
 
 class Simulator
 {   
@@ -40,6 +46,7 @@ class Simulator
         string instruction;
         string format;
         string opcode;
+        int pc_counter;
         int dest;
         int src1;
         int src2;
@@ -63,19 +70,20 @@ class Simulator
         //Read instructions from file while there are instructions to read
         //When the break instruction is reached stop taking instructions
         //Strat taking in data values
+        
+        pc_counter =60;
         while(infile>>instruction && instruction!="00111100000000000000000000001101")
         {
-            int pc_counter =60;
             pc_counter+=4;
             reset();
-            get_type_op(format);
+            get_name_op(format);
             
             //Instruction is category 2, XOR MUL ADD SUB etc
             if(format == "010")
-            {   //category 2 type instruction handelling
+            {   //category 2 name instruction handelling
 
                 //get opcode
-                get_type_op(opcode);
+                get_name_op(opcode);
                 if(opcode == "000")
                 {
                     save_cat2_inst("XOR");
@@ -116,14 +124,17 @@ class Simulator
             else if (format == "001")
             {
                 //get opcode
-                get_type_op(opcode);
+                get_name_op(opcode);
 
 
                 if (opcode == "000")
                 {
                 
                     Instruc *temp_instruc = new Instruc;
-                    temp_instruc->type = "NOP";
+                    //temp_instruc->pc = pc_counter;
+                    temp_instruc->cat = format;
+                    temp_instruc->instruction = instruction;
+                    temp_instruc->name = "NOP";
                     temp_instruc->op = opcode;
                     instructions.push_back(temp_instruc);
                 
@@ -131,7 +142,10 @@ class Simulator
                 else if (opcode == "001")
                 {
                     Instruc *temp_instruc = new Instruc;
-                    temp_instruc->type = "J";
+                    //temp_instruc->pc = pc_counter;
+                    temp_instruc->cat = format;
+                    temp_instruc->instruction = instruction;
+                    temp_instruc->name = "J";
                     //Transfor bit string into a bitset and then into an integer value to store in the address field
                     bitset<32> pc (pc_counter);
                     bitset<32> temp_addrs (instruction.substr(6,26));
@@ -165,11 +179,11 @@ class Simulator
                 }
             }
 
-            //CATEGORY TYPE 3 instructions
+            //CATEGORY name 3 instructions
             else if (format == "100")
             {
 
-                get_type_op(opcode);
+                get_name_op(opcode);
 
                 if(opcode == "000")
                 {
@@ -218,7 +232,10 @@ class Simulator
         /////////////Save Break instruction insto a struct!!!
     
         Instruc *temp_instruc = new Instruc;
-        temp_instruc->type = "BREAK";
+        //temp_instruc->pc = pc_counter;
+        temp_instruc->cat = format;
+        temp_instruc->instruction = instruction;
+        temp_instruc->name = "BREAK";
         instructions.push_back(temp_instruc);
 
         //Read the values in memory
@@ -234,7 +251,10 @@ class Simulator
     {
     
         Instruc *temp_instruc = new Instruc;
-        temp_instruc->type = instr_name;
+        //temp_instruc->pc = pc_counter;
+        temp_instruc->cat = format;
+        temp_instruc->instruction = instruction;
+        temp_instruc->name = instr_name;
         //Get register values to retrieve numbers that will be compared to determine if there is equality
         get_reg(src1);
         temp_instruc->src1 = src1;
@@ -254,7 +274,7 @@ class Simulator
         }
         bitset<32> temp_addrs (offset);
         temp_instruc->addrs = to_int(temp_addrs);
-        cout<<"TYPE "<<instr_name<<" OFFSET "<<offset<<" SRC1 "<<src1<<" SRC2 "<<src2 <<" Address "<< to_int(temp_addrs)<<endl;
+        cout<<"name "<<instr_name<<" OFFSET "<<offset<<" SRC1 "<<src1<<" SRC2 "<<src2 <<" Address "<< to_int(temp_addrs)<<endl;
         instructions.push_back(temp_instruc);
     
     
@@ -263,7 +283,10 @@ class Simulator
     {
     
         Instruc *temp_instruc = new Instruc;
-        temp_instruc->type = instr_name;
+        //temp_instruc->pc = pc_counter;
+        temp_instruc->cat = format;
+        temp_instruc->instruction = instruction;
+        temp_instruc->name = instr_name;
         //Get register values to retrieve numbers that will be compared to determine if there is equality
         get_reg(src1);
         temp_instruc->src1 = src1;
@@ -303,7 +326,7 @@ class Simulator
     
     
         Instruc *temp_instruc = new Instruc;
-        temp_instruc->type = instr_name;
+        temp_instruc->name = instr_name;
         temp_instruc->op = opcode;
         //get destination register
         get_reg(dest);
@@ -345,8 +368,21 @@ class Simulator
     void print_data()
     {
         for(Instruc* i: instructions)
+
         {
-            cout<<i->type<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
+            cout<< i->instruction<<"  "<< i->pc<<"  ";
+
+            //Category nanme
+            if(i->cat == "001")
+            {
+                if(i->name == "NOP")
+                {
+                
+                
+                    cout<<i->name<<endl;
+                }
+            }
+            cout<<i->name<<" "<<i->dest<<", "<<i->src1<<" "<<i->src2<<" "<<i->addrs <<endl;
         
         }
         for(int x: data)
@@ -367,18 +403,18 @@ class Simulator
         
     
     }
-    //used to get instruction type and opcode
-    void get_type_op(string &format)
+    //used to get instruction name and opcode
+    void get_name_op(string &format)
     {
     
-        //grab 3 leftmost bits to determine type of instructions
+        //grab 3 leftmost bits to determine name of instructions
             format+=instruction.substr(instr_pos,3);
-            //instruction location after finding type
+            //instruction location after finding name
             instr_pos+=3;
     
     }
 
-    //handle instructions of category 2 type
+    //handle instructions of category 2 name
     void cat_two()
     {
 
