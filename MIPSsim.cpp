@@ -14,7 +14,7 @@ using namespace std;
 class Instruc
 {
     public:
-
+        string print_instruc; //Name of the instructon that will be printed
         string name; //Store instruction name
         string instruction;//Store instruction
         string cat; //Store instruction category
@@ -72,7 +72,7 @@ class Simulator
         vector <Instruc*> instructions;  //Stores the instructions
         vector <int> regs; //Stores the values for the registers
         vector<Data*> data; //stores the data in memory that will be accesed using lw and sw
-
+        int cycle; 
 
     Simulator(string file):file_name{file},regs(32)
     {}
@@ -277,17 +277,28 @@ class Simulator
         //it's the spot where data starts becoming available, after 
         //the break command
         int pc_start = 64;
-        
+        int mem_start = data[0]->pc;
+        cycle = 0;
+        bool jump;
+        int jump_addrs;
         //Simulate instructions while break instruction is not found
-        for(int i =0;instructions[i]->name !="BREAK";i++)
+        for(int i =0; ;i++)
         {
+            jump = false;
+            jump_addrs = 0;
+            cycle++;
             //Category one instruction simulation
+            if(instructions[i]->name =="BREAK")
+            {
+                print_simulation(instructions[i]);   
+                break;
+            }
+
             if(instructions[i]->cat == "001")
             {
             
                 if(instructions[i]->name == "NOP")
                 {
-                    continue;
                 
                 }
                 else if(instructions[i]->name == "J")
@@ -296,33 +307,29 @@ class Simulator
                     //the index of the array, do -1 to offsett the i++
                     //that happens after each loop
                     //ex J 112 would do (112-64)/4 = 12-1 =11
-                    i = ((instructions[i]->addrs -pc_start)/4)-1;
+                    jump = true;
+                    jump_addrs = ((instructions[i]->addrs -pc_start)/4)-1;
+             //       cout<<"JUMP INSTRUCTION: "<<i<<endl;
                 }
                 else if(instructions[i]->name == "BEQ")
                 {
-                    if(instructions[i]->src1 == instructions[i]->src2)
+                    if(regs[instructions[i]->src1] == regs[instructions[i]->src2])
                     {
-                        i = ((instructions[i]->branch - pc_start)/4)-1;
+                        jump = true;
+                        jump_addrs = ((instructions[i]->branch - pc_start)/4)-1;
                     
-                    }
-                    else
-                    {
-                        continue;
-                    
+                 //       cout<<"BEQ INSTRUCTION: "<<i<<endl;
                     }
                 
                 }
                 else if(instructions[i]->name == "BNE")
                 {
                 
-                    if(instructions[i]->src1 != instructions[i]->src2)
+                    if(regs[instructions[i]->src1] != regs[instructions[i]->src2])
                     {
-                        i = ((instructions[i]->branch - pc_start)/4)-1;
-                    
-                    }
-                    else
-                    {
-                        continue;
+                        jump = true;
+                        jump_addrs = ((instructions[i]->branch - pc_start)/4)-1;
+                 //       cout<<"BNE INSTRUCTION: "<<i<<endl;
                     
                     }
                 
@@ -333,14 +340,12 @@ class Simulator
                 else if(instructions[i]->name == "BGTZ")
                 {
                     
-                    if(instructions[i]->src1 > 0 )
+                    if(regs[instructions[i]->src1] > 0 )
+
                     {
-                        i = ((instructions[i]->branch - pc_start)/4)-1;
-                    
-                    }
-                    else
-                    {
-                        continue;
+                        jump = true;
+                        jump_addrs = ((instructions[i]->branch - pc_start)/4)-1;
+                        //cout<<"BGTZ INSTRUCTION: "<<i<<endl;
                     
                     }
                 
@@ -349,40 +354,201 @@ class Simulator
                 else if(instructions[i]->name == "SW")
                 {
                     //get index of the memory location where data will be saved
-                    int index = (((instructions[i]->addrs + instructions[i]->src1)-pc_start)/4);
+                    int index = (((instructions[i]->addrs + regs[instructions[i]->src1])-mem_start)/4);
                     data[index]->val = regs[instructions[i]->src2];    //save the data in register to memory address
                 
                 }
                 else if(instructions[i]->name == "LW")
                 {
                     //get index of the memory location where data will be saved
-                    int index = (((instructions[i]->addrs + instructions[i]->src1)-pc_start)/4);
+                    int index = (((instructions[i]->addrs + regs[instructions[i]->src1])-mem_start)/4);
                     regs[instructions[i]->src2] = data[index]->val;    //save the data in register to memory address
                 
                 }
 
             }
+            else if(instructions[i]->cat == "010")
+            {
+                //XOR operation
+                if(instructions[i]->name == "XOR")
+                {
+                    auto temp_xor = regs[instructions[i]->src1]^regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_xor;
+                }
             
+                else if(instructions[i]->name == "MUL")
+                {
+                
+                    auto temp_mul = regs[instructions[i]->src1]*regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_mul;
+                
+                }
+                else if(instructions[i]->name == "ADD")
+                {
+                
+                    auto temp_add = regs[instructions[i]->src1]+regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_add;
+                
+                }
+                else if(instructions[i]->name == "SUB")
+                {
+                
+                    auto temp_sub = regs[instructions[i]->src1]-regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_sub;
+                
+                }
+                else if(instructions[i]->name == "AND")
+                {
+                
+                    auto temp_and = regs[instructions[i]->src1]&regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_and;
+                
+                }
+                else if(instructions[i]->name == "OR")
+                {
+                
+                    auto temp_or = regs[instructions[i]->src1]|regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_or;
+                
+                }
+                else if(instructions[i]->name == "ADDU")
+                {
+                
+                    auto temp_addu = regs[instructions[i]->src1]+regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_addu;
+                
+                }
+                else if(instructions[i]->name == "SUBU")
+                {
+                
+                    auto temp_subu = regs[instructions[i]->src1]-regs[instructions[i]->src2];
+
+                    regs[instructions[i]->dest] = temp_subu;
+                
+                }
+            }
+            
+            else if(instructions[i]->cat == "100")
+            {
+                
+                if(instructions[i]->name == "ORI")
+                {
+                
+                    auto temp_ori = regs[instructions[i]->src2]|instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_ori;
+                
+                }
+                else if(instructions[i]->name == "XORI")
+                {
+                    auto temp_xori = regs[instructions[i]->src2]^instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_xori;
+                
+                }
+                else if(instructions[i]->name == "ADDI")
+
+                {
+                    auto temp_addi = regs[instructions[i]->src2]+instructions[i]->addrs;
+
+
+                    regs[instructions[i]->src1] = temp_addi;
+                
+                }
+
+                else if(instructions[i]->name == "SUBI")
+
+                {
+                
+                    auto temp_subi = regs[instructions[i]->src2]-instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_subi;
+                
+                }
+                else if(instructions[i]->name == "ANDI")
+
+                {
+                
+                    auto temp_andi = regs[instructions[i]->src2]&instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_andi;
+                
+                }
+                else if(instructions[i]->name == "SRL")
+
+                {
+                
+                    auto temp_srl = regs[instructions[i]->src2]>>instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_srl;
+                
+                }
+                else if(instructions[i]->name == "SLL")
+
+                {
+                
+                    auto temp_sll = regs[instructions[i]->src2]<<instructions[i]->addrs;
+
+                    regs[instructions[i]->src1] = temp_sll;
+                
+                }
+
+                ///ADD SRA
+                else if(instructions[i]->name == "SRA")
+
+                {   
+                    //Ammount that we will loop
+                    auto shift_amnt = instructions[i]->addrs;
+
+                    //bitset with the value that will be shifted
+                    bitset<32> inst_shift (regs[instructions[i]->src2]);
+
+                    while(shift_amnt!=0)
+                    {
+                        if(inst_shift[31] == 1)
+                        {
+                            inst_shift = inst_shift>>1;
+                            inst_shift[31] = 1;
+
+                        }
+                        else
+                        {
+                            inst_shift = inst_shift>>1;
+
+                        }
+                        shift_amnt--;
+                    }
+                
+                    auto temp_sra = to_int(inst_shift);
+
+                    regs[instructions[i]->src1] = temp_sra;
+                
+                }
+                
+            
+            }
+            if(jump)
+            {
+                
+                print_simulation(instructions[i]);   
+                i = jump_addrs;
+            
+            }
+            else
+            {
+                print_simulation(instructions[i]);   
+            }
         
         }
     
     }
-
-    //return the index where the jump/branch instruction must go
-    //auto find_index(int offset) -> decltype(offset)
-    //{
-    //    for(int i = 0; i < instructions.size(); i++)
-    //    {
-    //        if(instructions[i]->pc == offset)
-    //    
-    //    }
-    //
-    //}
-
-
-
-
-
 
     //Save the info for a instruction with 2 registers and a 16 bit address
     void save_inst_16(string instr_name)
@@ -418,7 +584,7 @@ class Simulator
             bitset <32> temp_pc (temp_instruc->pc);
             //Add 4 to PC to reach next pc 
             bitset <32> temp_add (4);
-            temp_addrs<<=2;
+            temp_addrs=temp_addrs<<2;
             //Calculate branch address
             temp_instruc->branch = to_int(temp_pc)+to_int(temp_add)+to_int(temp_addrs);
         }
@@ -517,6 +683,8 @@ class Simulator
     }
     void print_data()
     {
+        string print; 
+
         for(Instruc* i: instructions)
 
         {
@@ -527,29 +695,41 @@ class Simulator
             {
                 if(i->name == "NOP")
                 {
-                    cout<<i->name<<endl;
+                    print = i->name;
+                    i->print_instruc = print;
+                    cout<<print<<endl;
                 }
                 else if (i->name == "J")
                 {
+                    print = i->name+" "+to_string(i->addrs);
+                    i->print_instruc = print;
                     cout<<i->name<<" "<<i->addrs<<endl;
                 }
                 else if (i->name == "BREAK")
                 {
+                    print = i->name;
+                    i->print_instruc = print;
                     cout<<i->name<<endl;
                 
                 }
                 else if (i->name == "SW" ||i->name == "LW")
                 {
                 
+                    print = i->name+" R"+to_string(i->src2)+", "+to_string(i->addrs)+"(R"+to_string(i->src1)+")";
+                    i->print_instruc = print;
                     cout<<i->name<<" R"<<i->src2<<", "<<i->addrs<<"(R"<<i->src1<<")"<<endl;
                 }
                 else if (i->name == "BEQ" ||i->name == "BNE")
                 {
+                    print = i->name+" R"+to_string(i->src1)+", "+"R"+to_string(i->src2)+", #"+to_string(i->addrs);
+                    i->print_instruc = print;
                     cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
                 }
                 else if(i->name == "BGTZ")
                 {
                     
+                    print = i->name+" R"+to_string(i->src1)+", #"+to_string(i->addrs);
+                    i->print_instruc = print;
                     cout<<i->name<<" R"<<i->src1<<", #"<<i->addrs<<endl;
                 
                 }
@@ -557,12 +737,16 @@ class Simulator
             else if(i->cat == "010")
             {
             
+                print = i->name+" R"+to_string(i->dest)+", R"+to_string(i->src1)+", R"+to_string(i->src2);
+                i->print_instruc = print;
                 cout<<i->name<<" R"<<i->dest<<", R"<<i->src1<<", R"<<i->src2<<endl;
             
             }
             else if (i->cat == "100")
             {
                 
+                print = i->name+" R"+to_string(i->src1)+", "+"R"+to_string(i->src2)+", #"+to_string(i->addrs);
+                i->print_instruc = print;
                 cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
 
             }
@@ -573,6 +757,62 @@ class Simulator
             cout<<x->instruction<<"  "<<x->pc<<"  "<<x->val<<endl;
 
         } 
+    }
+
+    void print_simulation(Instruc* i)
+    {
+        
+        cout<<"\n--------------------"<<endl;
+        cout<<"Cycle "<<cycle<<":\t"<<i->pc<<"\t"<< i->print_instruc<<endl;
+        cout<<endl;
+        cout<<"Registers"<<endl;
+        cout<<"R00:\t";
+        for(int j = 0; j < 8;j++)
+        {
+            cout<<regs[j]<<"\t";
+        
+        }
+        cout<<endl;
+        cout<<"R08:\t";
+        for(int j = 8; j < 16;j++)
+        {
+            cout<<regs[j]<<"\t";
+        
+        }
+        cout<<endl;
+        cout<<"R16:\t";
+        for(int j = 16; j < 24;j++)
+        {
+            cout<<regs[j]<<"\t";
+        
+        }
+        cout<<endl;
+    
+        cout<<"R24:\t";
+        for(int j = 24; j < 32;j++)
+        {
+            cout<<regs[j]<<"\t";
+        
+        }
+        cout<<endl;
+        cout<<"Data"<<endl;
+        for(int j = 0;j < data.size();j++)
+        {
+           if(j % 8 == 0 && j!= 0 )
+           {
+               cout<<"\n"<<data[j]->pc<<"\t";
+           } 
+           if(j % 8 == 0 && j==0)
+           {
+               cout<<data[j]->pc<<"\t";
+           } 
+            cout<<data[j]->val<<"\t";
+
+        
+        }
+        cout<<endl;
+
+    
     }
     
     
@@ -625,6 +865,7 @@ int main ()
     Simulator mips(file_name);
     mips.set_instructions();
     mips.print_data();
+    mips.simulate();
 
     return 0;
 }
