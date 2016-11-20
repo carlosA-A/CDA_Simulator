@@ -59,6 +59,7 @@ class Data:public Instruc
 class Simulator
 {   
     public:
+        ofstream sim;
         string instruction;
         string format;
         string opcode;
@@ -75,7 +76,10 @@ class Simulator
         int cycle; 
 
     Simulator(string file):file_name{file},regs(32)
-    {}
+    {
+    
+    
+    }
     //A preprocessing step that populates the data vector and the instruction vectors with instruction structs that contain details pertaining to each instruction
 
     void set_instructions()
@@ -273,6 +277,7 @@ class Simulator
 
     void simulate()
     {
+        sim.open("simulation.txt");
         //location where data becomes accessible in memory
         //it's the spot where data starts becoming available, after 
         //the break command
@@ -547,6 +552,9 @@ class Simulator
             }
         
         }
+
+        //close the file where the simulation output is stored
+        sim.close();
     
     }
 
@@ -683,12 +691,14 @@ class Simulator
     }
     void print_data()
     {
+        sim.open("disassembly.txt");
+
         string print; 
 
         for(Instruc* i: instructions)
 
         {
-            cout<< i->instruction<<"  "<< i->pc<<"  ";
+            sim<< i->instruction<<"\t"<< i->pc<<"\t";
 
             //Category nanme
             if(i->cat == "001")
@@ -697,19 +707,19 @@ class Simulator
                 {
                     print = i->name;
                     i->print_instruc = print;
-                    cout<<print<<endl;
+                    sim<<print<<"\n";
                 }
                 else if (i->name == "J")
                 {
-                    print = i->name+" "+to_string(i->addrs);
+                    print = i->name+" #"+to_string(i->addrs);
                     i->print_instruc = print;
-                    cout<<i->name<<" "<<i->addrs<<endl;
+                    sim<<i->name<<" #"<<i->addrs<<"\n";
                 }
                 else if (i->name == "BREAK")
                 {
                     print = i->name;
                     i->print_instruc = print;
-                    cout<<i->name<<endl;
+                    sim<<i->name<<"\n";
                 
                 }
                 else if (i->name == "SW" ||i->name == "LW")
@@ -717,20 +727,20 @@ class Simulator
                 
                     print = i->name+" R"+to_string(i->src2)+", "+to_string(i->addrs)+"(R"+to_string(i->src1)+")";
                     i->print_instruc = print;
-                    cout<<i->name<<" R"<<i->src2<<", "<<i->addrs<<"(R"<<i->src1<<")"<<endl;
+                    sim<<i->name<<" R"<<i->src2<<", "<<i->addrs<<"(R"<<i->src1<<")"<<"\n";
                 }
                 else if (i->name == "BEQ" ||i->name == "BNE")
                 {
                     print = i->name+" R"+to_string(i->src1)+", "+"R"+to_string(i->src2)+", #"+to_string(i->addrs);
                     i->print_instruc = print;
-                    cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
+                    sim<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<"\n";
                 }
                 else if(i->name == "BGTZ")
                 {
                     
                     print = i->name+" R"+to_string(i->src1)+", #"+to_string(i->addrs);
                     i->print_instruc = print;
-                    cout<<i->name<<" R"<<i->src1<<", #"<<i->addrs<<endl;
+                    sim<<i->name<<" R"<<i->src1<<", #"<<i->addrs<<"\n";
                 
                 }
             }
@@ -739,7 +749,7 @@ class Simulator
             
                 print = i->name+" R"+to_string(i->dest)+", R"+to_string(i->src1)+", R"+to_string(i->src2);
                 i->print_instruc = print;
-                cout<<i->name<<" R"<<i->dest<<", R"<<i->src1<<", R"<<i->src2<<endl;
+                sim<<i->name<<" R"<<i->dest<<", R"<<i->src1<<", R"<<i->src2<<"\n";
             
             }
             else if (i->cat == "100")
@@ -747,70 +757,74 @@ class Simulator
                 
                 print = i->name+" R"+to_string(i->src1)+", "+"R"+to_string(i->src2)+", #"+to_string(i->addrs);
                 i->print_instruc = print;
-                cout<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<endl;
+                sim<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<"\n";
 
             }
         
         }
         for(Data *x: data)
         {
-            cout<<x->instruction<<"  "<<x->pc<<"  "<<x->val<<endl;
+            sim<<x->instruction<<"\t"<<x->pc<<"\t"<<x->val<<"\n";
 
         } 
+        sim.close();
+        sim.clear();
+
     }
 
     void print_simulation(Instruc* i)
     {
+        //simassembly file will be created here
         
-        cout<<"\n--------------------"<<endl;
-        cout<<"Cycle "<<cycle<<":\t"<<i->pc<<"\t"<< i->print_instruc<<endl;
-        cout<<endl;
-        cout<<"Registers"<<endl;
-        cout<<"R00:\t";
+        sim<<"\n--------------------"<<"\n";
+        sim<<"Cycle "<<cycle<<":\t"<<i->pc<<"\t"<< i->print_instruc<<"\n";
+        sim<<"\n";
+        sim<<"Registers"<<"\n";
+        sim<<"R00:\t";
         for(int j = 0; j < 8;j++)
         {
-            cout<<regs[j]<<"\t";
+            sim<<regs[j]<<"\t";
         
         }
-        cout<<endl;
-        cout<<"R08:\t";
+        sim<<"\n";
+        sim<<"R08:\t";
         for(int j = 8; j < 16;j++)
         {
-            cout<<regs[j]<<"\t";
+            sim<<regs[j]<<"\t";
         
         }
-        cout<<endl;
-        cout<<"R16:\t";
+        sim<<"\n";
+        sim<<"R16:\t";
         for(int j = 16; j < 24;j++)
         {
-            cout<<regs[j]<<"\t";
+            sim<<regs[j]<<"\t";
         
         }
-        cout<<endl;
+        sim<<"\n";
     
-        cout<<"R24:\t";
+        sim<<"R24:\t";
         for(int j = 24; j < 32;j++)
         {
-            cout<<regs[j]<<"\t";
+            sim<<regs[j]<<"\t";
         
         }
-        cout<<endl;
-        cout<<"\nData"<<endl;
+        sim<<"\n";
+        sim<<"\nData"<<"\n";
         for(int j = 0;j < data.size();j++)
         {
            if(j % 8 == 0 && j!= 0 )
            {
-               cout<<"\n"<<data[j]->pc<<"\t";
+               sim<<"\n"<<data[j]->pc<<":\t";
            } 
            if(j % 8 == 0 && j==0)
            {
-               cout<<data[j]->pc<<"\t";
+               sim<<data[j]->pc<<":\t";
            } 
-            cout<<data[j]->val<<"\t";
+            sim<<data[j]->val<<"\t";
 
         
         }
-        cout<<endl;
+        sim<<"\n";
 
     
     }
