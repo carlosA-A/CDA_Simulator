@@ -795,7 +795,7 @@ class Simulator
         
         }
         cout<<endl;
-        cout<<"Data"<<endl;
+        cout<<"\nData"<<endl;
         for(int j = 0;j < data.size();j++)
         {
            if(j % 8 == 0 && j!= 0 )
@@ -858,14 +858,24 @@ class Simulator
 
 
 
-int main ()
+int main (int argc, char *argv[])
 {
-    string file_name;
-    cin>>file_name;
-    Simulator mips(file_name);
-    mips.set_instructions();
-    mips.print_data();
-    mips.simulate();
+    if(argc !=2)
+    {
+        cout<<"ERROR in file input"<<endl;
+    
+    }
+    else
+    {
+        //Take in filename
+        string file_name = argv[1];
+        //Create an instance of simulator
+        Simulator mips(file_name);
+        mips.set_instructions();
+        mips.print_data();
+        mips.simulate();
+    }
+
 
     return 0;
 }
