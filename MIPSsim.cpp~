@@ -2,6 +2,7 @@
 #include <bitset>         // std::bitset
 #include <fstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <utility>      // std::pair
 
@@ -254,12 +255,10 @@ class Simulator
             }
         }
         /////////////Save Break instruction into Instuction vector
-
-
+    
         Instruc *temp_instruc = new Instruc;
-        //Set category here since the category in format is related to the last instruction before the while loop broke
-        format = "001";
-        temp_instruc->cat ="001";
+        //temp_instruc->pc = pc_counter;
+        temp_instruc->cat = format;
         temp_instruc->instruction = instruction;
         temp_instruc->name = "BREAK";
         instructions.push_back(temp_instruc);
@@ -719,6 +718,7 @@ class Simulator
                 }
                 else if (i->name == "BREAK")
                 {
+                    //cout
                     print = i->name;
                     i->print_instruc = print;
                     sim<<i->name<<"\n";
@@ -756,6 +756,7 @@ class Simulator
             }
             else if (i->cat == "100")
             {
+                
                 print = i->name+" R"+to_string(i->src1)+", "+"R"+to_string(i->src2)+", #"+to_string(i->addrs);
                 i->print_instruc = print;
                 sim<<i->name<<" R"<<i->src1<<", "<<"R"<<i->src2<<", #"<<i->addrs<<"\n";
